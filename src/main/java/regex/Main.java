@@ -19,9 +19,9 @@ public class Main {
         final String userInput = scanner.nextLine();
         scanner.close();
         System.out.println("You entered \"" + userInput + "\"");
-        System.out.println(checkForPassword(userInput, 6));
-        System.out.println(extractEmails(userInput));
-        System.out.println(checkForDoubles(userInput));
+        System.out.println("Password Check (min length 6): " + checkForPassword(userInput, 6));
+        System.out.println("Extracted Emails: " + extractEmails(userInput));
+        System.out.println("Check for Double Capital Letters: " + checkForDoubles(userInput));
     }
 
     // Method 1 for checking if a string matches a regex: using Pattern.matches
@@ -38,8 +38,20 @@ public class Main {
      * @return whether the string satisfies the password requirements
      */
     public static boolean checkForPassword(String str, int minLength) {
-        final boolean propertyOne = Pattern.matches("REPLACE WITH CORRECT REGEX", str);
-        // as needed, modify this code.
+        // Handle null, which would fail Pattern.matches
+        if (str == null) {
+            return false;
+        }
+
+        // Regex uses lookaheads to assert property presence, then matches the length.
+        // (?=.*[a-z])  -> at least one lowercase letter
+        // (?=.*[A-Z])  -> at least one uppercase letter
+        // (?=.*\\d)   -> at least one digit
+        // .{minLength,} -> the string is at least minLength long
+        final String regex = String.format("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{%d,}", minLength);
+
+        final boolean propertyOne = Pattern.matches(regex, str);
+
         return propertyOne;
     }
 
@@ -55,7 +67,14 @@ public class Main {
      * @return a list containing the email addresses in the string.
      */
     public static List<String> extractEmails(String str) {
-        final Pattern pattern = Pattern.compile("REPLACE WITH CORRECT REGEX");
+        // Handle null input
+        if (str == null) {
+            return new ArrayList<>();
+        }
+
+        // Regex: [^\s@]+ matches the local part (one or more non-whitespace/non-@ characters).
+        // @(mail\.)?utoronto\.ca matches the domain, making "mail." optional.
+        final Pattern pattern = Pattern.compile("[^\\s@]+@(mail\\.)?utoronto\\.ca");
         final Matcher matcher = pattern.matcher(str);
         final List<String> result = new ArrayList<>();
         while (matcher.find()) {
@@ -76,6 +95,16 @@ public class Main {
      * @return whether str contains the same capital letter twice.
      */
     public static boolean checkForDoubles(String str) {
-        return str.matches("replace with correct regex");
+        // Handle null input
+        if (str == null) {
+            return false;
+        }
+
+        // Regex: .*([A-Z]).*\\1.*
+        // .* at the start and end allow matching the entire string.
+        // ([A-Z]) captures the first capital letter in group 1.
+        // .* allows any characters in between.
+        // \\1 is a back-reference, matching the exact same character captured in group 1.
+        return str.matches(".*([A-Z]).*\\1.*");
     }
 }
